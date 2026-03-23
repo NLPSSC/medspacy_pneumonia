@@ -9,14 +9,17 @@ TARGET_LABELS = {
     # "PN"
 }
 
+
 def extract_ngram(doc_df):
     return doc_df.iloc[0]["bow"]
 
+
 def extract_label_counts(ents_df):
     return {
-        "ASSERTED:"+label: count for (label, count) in
-        ents_df["label_"].value_counts().items()
+        "ASSERTED:" + label: count
+        for (label, count) in ents_df["label_"].value_counts().items()
     }
+
 
 def extract_context_attr_counts(ents_df):
     context_attr_dict = dict()
@@ -26,7 +29,7 @@ def extract_context_attr_counts(ents_df):
         "is_historical",
         "is_uncertain",
         "is_ignored",
-        "is_family"
+        "is_family",
     ]:
         sub_df = ents_df[ents_df[attr] == True]
         for label in sub_df["label_"]:
@@ -35,54 +38,77 @@ def extract_context_attr_counts(ents_df):
             context_attr_dict[feature_name] += 1
     return context_attr_dict
 
+
 def extract_ent_literals(ents_df):
     return {
-        "literal:"+literal: count for (literal, count) in
-        ents_df["literal"].value_counts().items()
+        "literal:" + literal: count
+        for (literal, count) in ents_df["literal"].value_counts().items()
     }
+
 
 def extract_ent_sections(ents_df):
     return {
-        f"SECTION={section}:{label}": count for ((label, section), count) in
-    ents_df.groupby(["label_", "section_category"]).size().items()
+        f"SECTION={section}:{label}": count
+        for ((label, section), count) in ents_df.groupby(["label_", "section_category"])
+        .size()
+        .items()
     }
+
 
 def extract_section_categories(sections_df):
     sections_df = sections_df[sections_df["section_category"] != "UNK"]
     return {
-        f"SECTION:{section}": count for (section, count) in
-    sections_df.groupby("section_category").size().items()
+        f"SECTION:{section}": count
+        for (section, count) in sections_df.groupby("section_category").size().items()
     }
+
 
 def extract_section_titles(sections_df):
     return {
-        f"SECTION:{section}": count for (section, count) in
-    sections_df.groupby("section_title_text").size().items()
+        f"SECTION:{section}": count
+        for (section, count) in sections_df.groupby("section_title_text").size().items()
     }
+
 
 def extract_context_edges_text(context_df):
     return {
-        f"{modifier.lower()}==>{ent.lower()}": count for (ent, modifier), count in
-    context_df.groupby(["ent_text", "modifier_text", ]).size().items()
+        f"{modifier.lower()}==>{ent.lower()}": count
+        for (ent, modifier), count in context_df.groupby(
+            [
+                "ent_text",
+                "modifier_text",
+            ]
+        )
+        .size()
+        .items()
     }
+
 
 def extract_doc_classification(doc_df):
     return {"nlp_document_classification": doc_df.iloc[0]["document_classification"]}
 
+
 def tokenize_ngrams(text, n=3):
     ngrams = []
-    for i in range(1, n+1):
-        ngrams += list(textacy.extract.ngrams(nlp.tokenizer(text), i, filter_stops=False, filter_punct=False))
+    for i in range(1, n + 1):
+        ngrams += list(
+            textacy.extract.ngrams(
+                nlp.tokenizer(text), i, filter_stops=False, filter_punct=False
+            )
+        )
     return ngrams
+
 
 def doc2tokens(doc):
     tokens = textacy.extract.ngrams(doc, 1, filter_stops=True, filter_punct=True)
     return [token.text.lower() for token in tokens]
 
+
 def build_idx2word(vectorizer):
     feature_names_arr = vectorizer.get_feature_names()
     idx2word = {i: word for (i, word) in enumerate(feature_names_arr)}
     return idx2word
+
 
 def doc2bow(doc, vectorizer, idx2word):
     X = vectorizer.transform([doc])
@@ -91,7 +117,7 @@ def doc2bow(doc, vectorizer, idx2word):
     for row, col in zip(rows, cols):
         ngram = idx2word[col]
         count = X[row, col]
-        token_dict["NGRAM:"+ngram] = count
+        token_dict["NGRAM:" + ngram] = count
     return token_dict
 
 
@@ -108,7 +134,9 @@ class FeatureExtractor:
             func = func_dict["func"]
             is_asserted = func_dict.get("is_asserted", False)
 
-            feature_dict.update(self._extract_ent_features(func, ents_df, is_asserted=is_asserted))
+            feature_dict.update(
+                self._extract_ent_features(func, ents_df, is_asserted=is_asserted)
+            )
         return feature_dict
 
     def _extract_ent_features(self, func, ents_df, is_asserted=False, **kwargs):
@@ -168,21 +196,20 @@ class FeatureExtractor:
         doc._.feature_dict = feature_dict
         return doc
 
+
 cfg = {
     "ent": [
-    {"func": extract_label_counts, "is_asserted": True},
-    {"func": extract_context_attr_counts},
-    {"func": extract_ent_literals, "is_asserted": True},
-    {"func": extract_ent_sections}],
+        {"func": extract_label_counts, "is_asserted": True},
+        {"func": extract_context_attr_counts},
+        {"func": extract_ent_literals, "is_asserted": True},
+        {"func": extract_ent_sections},
+    ],
     "doc": [
         # {"func": extract_doc_classification},
         {"func": extract_ngram},
     ],
-    "section": [
-        {"func": extract_section_categories},
-        {"func": extract_section_titles}
-    ],
+    "section": [{"func": extract_section_categories}, {"func": extract_section_titles}],
     "context": [
-          {"func": extract_context_edges_text},
+        {"func": extract_context_edges_text},
     ],
 }
