@@ -2,14 +2,17 @@ import pytest
 
 from medspacy_pna.util import build_nlp
 from medspacy_pna.util import get_document_classifier_pipe_name
-from medspacy_pna.document_classification.emergency_document_classifier import EmergencyDocumentClassifier
+from medspacy_pna.document_classification.emergency_document_classifier import (
+    EmergencyDocumentClassifier,
+)
 
 nlp = build_nlp("emergency")
+
 
 class TestDischargeLogic:
 
     def test_clf_cls(self):
-        assert isinstance(nlp.get_pipe(get_document_classifier_pipe_name(nlp)), EmergencyDocumentClassifier)
+        assert isinstance(nlp.get_pipe(get_document_classifier_pipe_name(nlp)), EmergencyDocumentClassifier)  # type: ignore
 
     def test_pos_docs(self):
         texts = [
@@ -18,7 +21,7 @@ class TestDischargeLogic:
             "Diagnoses: Pneumonia",
             "Final Diagnoses: Pneumonia",
         ]
-        failed = [] # [(doc, expected, actual)]
+        failed = []  # [(doc, expected, actual)]
         for text in texts:
             doc = nlp(text)
             if doc._.document_classification != "POS":
@@ -42,10 +45,7 @@ class TestDischargeLogic:
         assert failed == []
 
     def test_neg_docs(self):
-        texts = [
-
-            "Assessment/Plan: Airspace disease"
-        ]
+        texts = ["Assessment/Plan: Airspace disease"]
         failed = []
         for text in texts:
             doc = nlp(text)
@@ -53,7 +53,7 @@ class TestDischargeLogic:
                 failed.append((doc, "NEG", doc._.document_classification))
         assert failed == []
 
-    def test_ro_pneumonia(self): # TODO: Move this somewhere else
+    def test_ro_pneumonia(self):  # TODO: Move this somewhere else
         text = "objective r/o pneumonia"
         doc = nlp(text)
         # doc[0].is_sent_start = True
@@ -66,12 +66,18 @@ class TestDischargeLogic:
     def test_imaging_terms(self):
         texts = [
             ("A/P: consolidation", "NEG"),
-            ("Medical Decision Making: possible pneumonia. A/P: No consolidation.", "NEG"),
-            ("Medical Decision Making: possible pneumonia. A/P: No airspace disease.", "NEG"),
+            (
+                "Medical Decision Making: possible pneumonia. A/P: No consolidation.",
+                "NEG",
+            ),
+            (
+                "Medical Decision Making: possible pneumonia. A/P: No airspace disease.",
+                "NEG",
+            ),
             ("A/P: There is pneumonia. No consolidation.", "POS"),
         ]
         failed = []
-        for (text, expected) in texts:
+        for text, expected in texts:
             doc = nlp(text)
             pred = doc._.document_classification
             if pred != expected:
