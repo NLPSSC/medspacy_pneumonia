@@ -165,6 +165,8 @@ class RadiologyDocumentClassifier(BaseDocumentClassifier):
         # print(negated_ent_labels)
         # print(asserted_ent_labels)
 
+        document_classification = None
+
         if 0 == 1:
             pass
         # NOTE 9/27: If there is an uncertain Tier 2, bump up to Positive
@@ -185,6 +187,8 @@ class RadiologyDocumentClassifier(BaseDocumentClassifier):
             document_classification = "POSSIBLE"
         else:
             document_classification = "NEG"
+        
+        assert document_classification is not None, "Document classification should not be None"
         return document_classification
 
     def classify_document_radiology_full(self, doc):
