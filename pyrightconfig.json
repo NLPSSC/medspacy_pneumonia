@@ -1,0 +1,17 @@
+{
+    "include": [
+        "medspacy_pna",
+        "tests"
+    ],
+    "exclude": [
+        "venv",
+        "build",
+        "dist",
+        "__pycache__",
+        ".git",
+        ".venv",
+        "**/node_modules",
+        "**/.vscode",
+        "**/.*"
+    ]
+}
