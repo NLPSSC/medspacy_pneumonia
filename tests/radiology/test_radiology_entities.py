@@ -152,8 +152,7 @@ class TestRadiologyEntities:
         assert (len(doc.ents) > 0)
         ent = doc.ents[0]
         anatomy = ent._.anatomy
-        assert anatomy.text == expected_anatomy_text
-
+        assert anatomy.text == expected_anatomy_text  # type: ignore
     def test_atelectasis_or_pneumonia(self, testutils):
         texts = ["pneumonia and/or atelectasis", "atelectasis and/or pneumonia", "atelectasis or pneumonia",]
         for text in texts:

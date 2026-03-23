@@ -31,4 +31,4 @@ class TestRadiologyDocumentClassifier:
         schemas = ["keywords", "attributes", "full", "linked"]
         for schema in schemas:
             nlp = build_nlp("radiology", doc_cls_schema=schema)
-            assert nlp.get_pipe(get_document_classifier_pipe_name(nlp)).classification_schema == schema
+            assert nlp.get_pipe(get_document_classifier_pipe_name(nlp)).classification_schema == schema  # type: ignore

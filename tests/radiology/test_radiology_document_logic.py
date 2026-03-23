@@ -41,7 +41,7 @@ class TestRadiologyLogic:
         """Test that a 'Tier 2' evidence will be overruled by an excluding diagnosis such as atelectasis."""
         text = "Found an infiltrate which is likely atelectasis."
         doc = nlp(text, disable=["pneumonia_radiologydocumentclassifier"])
-        nlp.get_pipe("pneumonia_radiologydocumentclassifier")(doc, schema="full")
+        nlp.get_pipe("pneumonia_radiologydocumentclassifier")(doc, schema="full")  # type: ignore
         assert len(doc.ents) == 2
         assert doc.ents[1].label_ == "ATELECTASIS"
         assert doc.ents[0].label_ == "INFILTRATE"
@@ -51,7 +51,7 @@ class TestRadiologyLogic:
         """Test that a 'Tier 1' evidence will overrule an excluding diagnosis such as atelectasis."""
         text = "Found an infiltrate which is likely atelectasis or possibly pneumonia."
         doc = nlp(text, disable=["pneumonia_radiologydocumentclassifier"])
-        nlp.get_pipe("pneumonia_radiologydocumentclassifier")(doc, schema="full")
+        nlp.get_pipe("pneumonia_radiologydocumentclassifier")(doc, schema="full")  # type: ignore
         assert len(doc.ents) == 3
         assert doc.ents[2].label_ == "PNEUMONIA"
         assert doc.ents[1].label_ == "ATELECTASIS"
@@ -62,8 +62,8 @@ class TestRadiologyLogic:
         text = "No evidence of pneumonia."
         doc = nlp(text, disable=["pneumonia_radiologydocumentclassifier"])
         clf = nlp.get_pipe("pneumonia_radiologydocumentclassifier")
-        assert clf.classify_document(doc, classification_schema="keywords") == "POS"
-        assert clf.classify_document(doc, classification_schema="full") == "NEG"
+        assert clf.classify_document(doc, classification_schema="keywords") == "POS"  # type: ignore
+        assert clf.classify_document(doc, classification_schema="full") == "NEG"  # type: ignore
 
     def test_attribute_classification(self):
         texts = [
@@ -76,4 +76,4 @@ class TestRadiologyLogic:
         clf = nlp.get_pipe("pneumonia_radiologydocumentclassifier")
         for text, expected_cls in texts:
             doc = nlp(text)
-            assert clf.classify_document(doc, schema="attributes") == expected_cls
+            assert clf.classify_document(doc, schema="attributes") == expected_cls  # type: ignore
