@@ -282,4 +282,4 @@ class EmergencyDocumentClassifier(BaseDocumentClassifier):
         elif classification_schema == "attributes":
             return self.classify_document_emergency_attributes(doc)
         else:
-            raise ValueError("Invalid classification_schema:", schema)
+            raise ValueError("Invalid classification_schema:", classification_schema)
