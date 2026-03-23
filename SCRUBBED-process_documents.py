@@ -1,4 +1,4 @@
-from src.util import build_nlp
+from medspacy_pna.util import build_nlp
 import pandas as pd
 from datetime import datetime
 
@@ -12,34 +12,21 @@ SOURCE_TABLES = {
     "emergency": "NLP.Document_Queue_Emergency",
 }
 TARGET_TABLES = {
-    "radiology": {
-        "doc": "NLP.Doc_Radiology",
-        "ent": "NLP.Ent_Radiology"
-    },
-    "discharge": {
-        "doc": "NLP.Doc_Discharge",
-        "ent": "NLP.Ent_Discharge"
-    },
-    "emergency": {
-        "doc": "NLP.Doc_Emergency",
-        "ent": "NLP.Ent_Emergency"
-    }
+    "radiology": {"doc": "NLP.Doc_Radiology", "ent": "NLP.Ent_Radiology"},
+    "discharge": {"doc": "NLP.Doc_Discharge", "ent": "NLP.Ent_Discharge"},
+    "emergency": {"doc": "NLP.Doc_Emergency", "ent": "NLP.Ent_Emergency"},
 }
 ID_COLS = {
     "radiology": "",
     "discharge": "",
     "emergency": "",
 }
-TEXT_COLS = {
-    "radiology": "Text",
-    "discharge": "ReportText",
-    "emergency": "ReportText"
-}
+TEXT_COLS = {"radiology": "Text", "discharge": "ReportText", "emergency": "ReportText"}
 
 SCHEMAS = {
     "radiology": ("linked",),
     "discharge": ("full", "diagnoses"),
-    "emergency": ("full",)
+    "emergency": ("full",),
 }
 
 MIN_DATE = "2021-01-01"
@@ -53,7 +40,10 @@ def create_connection(autocommit=True):
 
 def init_log(conn, domain):
     cursor = conn.cursor()
-    cursor.execute(f"""INSERT INTO {LOG_TABLE} (Domain, InsertDateTime) VALUES (?, GETDATE())""", (domain,))
+    cursor.execute(
+        f"""INSERT INTO {LOG_TABLE} (Domain, InsertDateTime) VALUES (?, GETDATE())""",
+        (domain,),
+    )
     cursor.execute(f"SELECT MAX(Execute_Log_ID) FROM {LOG_TABLE}")
     execute_id = cursor.fetchone()[0]
 
@@ -72,7 +62,9 @@ def log_batch(conn, execute_id, batch_size, start_time):
 
 
 def close_log(conn, execute_id, rslt=0, rslt_msg=None):
-    query = f"""UPDATE {LOG_TABLE} SET Result = ?, ResultMsg = ? WHERE Execute_Log_ID = ?"""
+    query = (
+        f"""UPDATE {LOG_TABLE} SET Result = ?, ResultMsg = ? WHERE Execute_Log_ID = ?"""
+    )
     cursor = conn.cursor()
 
     cursor.execute(query, (rslt, rslt_msg, execute_id))
@@ -80,7 +72,7 @@ def close_log(conn, execute_id, rslt=0, rslt_msg=None):
     cursor.close()
 
 
-def get_source_data_documents(conn, domain, num_docs=500):
+def get_source_data_documents(conn, domain, num_docs=500) -> pd.DataFrame | None:
     if domain == "radiology":
         df = get_source_data_radiology(conn, num_docs)
     elif domain == "discharge":
@@ -90,18 +82,18 @@ def get_source_data_documents(conn, domain, num_docs=500):
     return df
 
 
-def get_source_data_discharge(conn, domain, num_docs=500):
-    df = None
+def get_source_data_discharge(conn, domain, num_docs=500) -> pd.DataFrame | None:
+    df: pd.DataFrame | None = None
     return df
 
 
-def get_source_data_emergency(conn, domain, num_docs=500):
-    df = None
+def get_source_data_emergency(conn, domain, num_docs=500) -> pd.DataFrame | None:
+    df: pd.DataFrame | None = None
     return df
 
 
-def get_source_data_radiology(conn, num_docs=500):
-    df = None
+def get_source_data_radiology(conn, num_docs=500) -> pd.DataFrame | None:
+    df: pd.DataFrame | None = None
     return df
 
 
@@ -124,12 +116,16 @@ def wrangle_df_radiology(df):
 def wrangle_df_emergency(df):
     """Cast date columns to datetime objects and concatenate texts"""
     df[TEXT_COLS["emergency"]] = df.apply(
-        lambda row: modify_emergency_text(row[TEXT_COLS["emergency"]], row["Addendum"]), axis=1)
+        lambda row: modify_emergency_text(row[TEXT_COLS["emergency"]], row["Addendum"]),
+        axis=1,
+    )
     group_by_cols = ["Parent" + ID_COLS["emergency"]]
     grouped = df.groupby(group_by_cols)
     grouped = grouped.agg({TEXT_COLS["emergency"]: "".join})
     grouped = grouped.reset_index()
-    return grouped.rename({"Parent" + ID_COLS["emergency"]: ID_COLS["emergency"]}, axis=1)
+    return grouped.rename(
+        {"Parent" + ID_COLS["emergency"]: ID_COLS["emergency"]}, axis=1
+    )
 
 
 def modify_emergency_text(text, is_addendum):
@@ -141,20 +137,34 @@ def modify_emergency_text(text, is_addendum):
 
 def create_db_writers(conn, domain, doc_attrs, ent_attrs):
     nlp_conn = DbConnect(conn=conn)
-    doc_writer = DbWriter(nlp_conn, TARGET_TABLES[domain]["doc"],
-                          create_table=False, drop_existing=False,
-                          write_batch_size=100, cols=doc_attrs,
-                          col_types=["" for x in doc_attrs]  # Don't actually need this if we're not creating a table
-                          )
-    ent_writer = DbWriter(nlp_conn, TARGET_TABLES[domain]["ent"],
-                          create_table=False, drop_existing=False,
-                          write_batch_size=100, cols=ent_attrs,
-                          col_types=["" for x in ent_attrs]  # Don't actually need this if we're not creating a table
-                          )
+    doc_writer = DbWriter(
+        nlp_conn,
+        TARGET_TABLES[domain]["doc"],
+        create_table=False,
+        drop_existing=False,
+        write_batch_size=100,
+        cols=doc_attrs,
+        col_types=[
+            "" for x in doc_attrs
+        ],  # Don't actually need this if we're not creating a table
+    )
+    ent_writer = DbWriter(
+        nlp_conn,
+        TARGET_TABLES[domain]["ent"],
+        create_table=False,
+        drop_existing=False,
+        write_batch_size=100,
+        cols=ent_attrs,
+        col_types=[
+            "" for x in ent_attrs
+        ],  # Don't actually need this if we're not creating a table
+    )
     return doc_writer, ent_writer
 
 
-def process_texts(df, nlp, domain, doc_writer, ent_writer, batch_size, conn, batch_id, start_time):
+def process_texts(
+    df, nlp, domain, doc_writer, ent_writer, batch_size, conn, batch_id, start_time
+):
     num_batches = len(df) // batch_size + 1
 
     for batch_num in range(num_batches):
@@ -165,7 +175,9 @@ def process_texts(df, nlp, domain, doc_writer, ent_writer, batch_size, conn, bat
             sub_df = df.iloc[start:end].copy()
         except IndexError:
             break
-        process_batch(sub_df, nlp, domain, doc_writer, ent_writer, conn, batch_id, start_time)
+        process_batch(
+            sub_df, nlp, domain, doc_writer, ent_writer, conn, batch_id, start_time
+        )
 
 
 def process_batch(df, nlp, domain, doc_writer, ent_writer, conn, batch_id, start_time):
@@ -181,7 +193,13 @@ def process_batch(df, nlp, domain, doc_writer, ent_writer, conn, batch_id, start
         # doc_data = row["doc"]._.get_data("doc", as_rows=True)
         ent_data = row["doc"]._.get_data("ent", as_rows=True)
         for schema in SCHEMAS[domain]:
-            doc_data_rows.append((row[ID_COLS[domain]], clf.classify_document(doc, schema=schema), schema))
+            doc_data_rows.append(
+                (
+                    row[ID_COLS[domain]],
+                    clf.classify_document(doc, schema=schema),
+                    schema,
+                )
+            )
         ent_data_rows += [(row[ID_COLS[domain]],) + d for d in ent_data]
     # print(doc_data_rows)
     # print(ent_data_rows[:5])
@@ -195,11 +213,15 @@ def process_batch(df, nlp, domain, doc_writer, ent_writer, conn, batch_id, start
     log_batch(conn, batch_id, len(df), start_time)
     return True
 
+
 def main():
     conn = create_connection()
     batch_id = init_log(conn, args.domain)
 
-    df = get_source_data_documents(conn, args.domain, num_docs=args.num_docs)
+    df: pd.DataFrame | None = get_source_data_documents(
+        conn, args.domain, num_docs=args.num_docs
+    )
+    assert df is not None
     print(df)
     nlp = build_nlp(args.domain, doc_consumer=True)
     print(nlp.pipe_names)
@@ -207,13 +229,28 @@ def main():
     print(f"Processing {len(df)} documents")
     start_time = datetime.now()
 
-    doc_attrs = [ID_COLS[args.domain], "document_classification", "classification_schema"]
-    ent_attrs = [ID_COLS[args.domain]] + nlp.get_pipe("doc_consumer").dtype_attrs["ent"]
+    doc_attrs = [
+        ID_COLS[args.domain],
+        "document_classification",
+        "classification_schema",
+    ]
+    ent_attrs = [ID_COLS[args.domain]] + nlp.get_pipe("doc_consumer").dtype_attrs["ent"]  # type: ignore
     doc_writer, ent_writer = create_db_writers(conn, args.domain, doc_attrs, ent_attrs)
 
-    process_texts(df, nlp, args.domain, doc_writer, ent_writer, args.batch_size, conn, batch_id, start_time)
+    process_texts(
+        df,
+        nlp,
+        args.domain,
+        doc_writer,
+        ent_writer,
+        args.batch_size,
+        conn,
+        batch_id,
+        start_time,
+    )
     # doc_writer.db.close()
-    conn.close()
+    if conn is not None and hasattr(conn, "close"):
+        conn.close()
     runtime = (datetime.now() - start_time).seconds
 
     print(f"Procssed {len(df)} documents in {runtime} seconds")
@@ -221,7 +258,9 @@ def main():
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("-d", "--domain", choices=("emergency", "discharge", "radiology"))
+    parser.add_argument(
+        "-d", "--domain", choices=("emergency", "discharge", "radiology")
+    )
 
     parser.add_argument("-n", "--num-docs", type=int, default=500)
     parser.add_argument("-b", "--batch-size", type=int, default=25)
