@@ -1,28 +1,27 @@
 from spacy.language import Language
 
-from .document_classifier import BaseDocumentClassifier
+from .document_classifier import BaseDocumentClassifier, ClassificationResult
 
 TARGET_CLASSES = {"PNEUMONIA", "CONSOLIDATION", "INFILTRATE", "OPACITY"}
 
 CLINICAL_CLASSES = {
     "PNEUMONIA",
-
 }
 
 RADIOGRAPHIC_CLASSES = {
     "INFILTRATE",
     "OPACITY",
     "CONSOLIDATION",
-    "RAD_PNEUMONIA", # Terms for pneumonia specific to radiology
+    "RAD_PNEUMONIA",  # Terms for pneumonia specific to radiology
 }
 
 ENTITY_ATTRIBUTES = {
-        "is_negated": False, # Keep negations as part of the classification logic
-        "is_hypothetical": False,
-        "is_historical": False,
-        "is_family": False,
-        # "is_uncertain": False,
-        "is_ignored": False
+    "is_negated": False,  # Keep negations as part of the classification logic
+    "is_hypothetical": False,
+    "is_historical": False,
+    "is_family": False,
+    # "is_uncertain": False,
+    "is_ignored": False,
 }
 
 RELEVANT_SECTIONS = {
@@ -30,23 +29,30 @@ RELEVANT_SECTIONS = {
         "observation_and_plan",
         "discharge_diagnoses",
         "addendum",
-        "impression", # May need to disambiguate this from imaging
+        "impression",  # May need to disambiguate this from imaging
         "diagnoses",
     },
     "TIER_2": {
         "medical_decision_making",
         "hospital_course",
         "ed_course",
-        "admission_diagnoses"
-    }
+        "admission_diagnoses",
+    },
 }
+
 
 @Language.factory("pneumonia_emergencydocumentclassifier")
 class EmergencyDocumentClassifier(BaseDocumentClassifier):
     domain = "emergency"
     schemas = ("full", "attributes", "keywords")
 
-    def __init__(self, nlp, name="pneumonia_emergencydocumentclassifier", classification_schema=None, debug=False):
+    def __init__(
+        self,
+        nlp,
+        name="pneumonia_emergencydocumentclassifier",
+        classification_schema=None,
+        debug=False,
+    ):
         self.nlp = nlp
         self.name = name
         if classification_schema is None:
@@ -64,52 +70,21 @@ class EmergencyDocumentClassifier(BaseDocumentClassifier):
         # TODO: Clean this up
         ent_data = {
             "TIER_1": {
-                "clinical": {
-                    "asserted": [],
-                    "uncertain": [],
-                    "negated": []
-                },
-                "radiographic": {
-                    "asserted": [],
-                    "uncertain": [],
-                    "negated": []
-                },
+                "clinical": {"asserted": [], "uncertain": [], "negated": []},
+                "radiographic": {"asserted": [], "uncertain": [], "negated": []},
             },
-         "TIER_2": {
-             "clinical": {
-                 "asserted": [],
-                 "uncertain": [],
-                 "negated": []
-             },
-             "radiographic": {
-                 "asserted": [],
-                 "uncertain": [],
-                 "negated": []
-             },
+            "TIER_2": {
+                "clinical": {"asserted": [], "uncertain": [], "negated": []},
+                "radiographic": {"asserted": [], "uncertain": [], "negated": []},
             },
             "TIER_3": {
-                "clinical": {
-                    "asserted": [],
-                    "uncertain": [],
-                    "negated": []
-                },
-                "radiographic": {
-                    "asserted": [],
-                    "uncertain": [],
-                    "negated": []
-                },
-            }, "TIER_3": {
-             "clinical": {
-                 "asserted": [],
-                 "uncertain": [],
-                 "negated": []
-             },
-             "radiographic": {
-                 "asserted": [],
-                 "uncertain": [],
-                 "negated": []
-             },
-            }
+                "clinical": {"asserted": [], "uncertain": [], "negated": []},
+                "radiographic": {"asserted": [], "uncertain": [], "negated": []},
+            },
+            "TIER_3": {
+                "clinical": {"asserted": [], "uncertain": [], "negated": []},
+                "radiographic": {"asserted": [], "uncertain": [], "negated": []},
+            },
         }
 
         for ent in doc.ents:
@@ -129,7 +104,7 @@ class EmergencyDocumentClassifier(BaseDocumentClassifier):
             # print(ent, label_domain)
             is_excluded = False
             # Check if any of the attributes don't match required values (ie., is_negated == True)
-            for (attr, req_value) in ENTITY_ATTRIBUTES.items():
+            for attr, req_value in ENTITY_ATTRIBUTES.items():
                 # This entity won't count as positive evidence, move onto the next one
                 if getattr(ent._, attr) != req_value:
                     is_excluded = True
@@ -145,13 +120,13 @@ class EmergencyDocumentClassifier(BaseDocumentClassifier):
 
     # TODO: move this to base class
     def is_excluded_attr(self, ent):
-        for (attr, req_value) in ENTITY_ATTRIBUTES.items():
+        for attr, req_value in ENTITY_ATTRIBUTES.items():
             # This entity won't count as positive evidence, move onto the next one
             if getattr(ent._, attr) != req_value:
                 return True
         return False
 
-    def classify_document_emergency(self, doc):
+    def classify_document_emergency(self, doc) -> ClassificationResult:
         """Document logic:
         1. Is there clinical evidence in the A/P or another Tier 1 section: --> 'POS' or 'POSSIBLE'
         2. If absent, is there any clinical evidence in other relevant sections?
@@ -172,16 +147,20 @@ class EmergencyDocumentClassifier(BaseDocumentClassifier):
         # IF there are no final negations, "POSSIBLE"
         # ie., "MDM: Possible pneumonia... A/P: No pneumonia"
         negated_ents = (
-                ent_data["TIER_1"]["radiographic"]["negated"]
-                + ent_data["TIER_2"]["radiographic"]["negated"]
-                + ent_data["TIER_3"]["radiographic"]["negated"] # TODO: This might be bad
-                + ent_data["TIER_1"]["clinical"]["negated"]
-                + ent_data["TIER_2"]["clinical"]["negated"]
-                + ent_data["TIER_3"]["clinical"]["negated"] # TODO: This might be bad
+            ent_data["TIER_1"]["radiographic"]["negated"]
+            + ent_data["TIER_2"]["radiographic"]["negated"]
+            + ent_data["TIER_3"]["radiographic"]["negated"]  # TODO: This might be bad
+            + ent_data["TIER_1"]["clinical"]["negated"]
+            + ent_data["TIER_2"]["clinical"]["negated"]
+            + ent_data["TIER_3"]["clinical"]["negated"]  # TODO: This might be bad
         )
         negated_ents = sorted(negated_ents, key=lambda x: x.start)
-        uncertain_ents = ent_data["TIER_1"]["clinical"]["uncertain"] + ent_data["TIER_2"]["clinical"]["asserted"] + ent_data["TIER_2"]["clinical"]["uncertain"]
-        uncertain_ents = sorted(uncertain_ents, key=lambda x:x.start)
+        uncertain_ents = (
+            ent_data["TIER_1"]["clinical"]["uncertain"]
+            + ent_data["TIER_2"]["clinical"]["asserted"]
+            + ent_data["TIER_2"]["clinical"]["uncertain"]
+        )
+        uncertain_ents = sorted(uncertain_ents, key=lambda x: x.start)
         if uncertain_ents:
             # Check for Tier 2 evidence after the last uncertain mention
             # Then we should call this negative
@@ -204,7 +183,7 @@ class EmergencyDocumentClassifier(BaseDocumentClassifier):
         #         return "POSSIBLE"
         return "NEG"
 
-    def classify_document_emergency_attributes(self, doc):
+    def classify_document_emergency_attributes(self, doc) -> ClassificationResult:
         """Document logic:
         1. Is there clinical evidence in the A/P or another Tier 1 section: --> 'POS' or 'POSSIBLE'
         2. If absent, is there any clinical evidence in other relevant sections?
@@ -214,9 +193,21 @@ class EmergencyDocumentClassifier(BaseDocumentClassifier):
                 Otherwise, 'POSSIBLE'
         """
         ent_data = self.gather_ent_data(doc)
-        asserted = ent_data["TIER_1"]["clinical"]["asserted"] + ent_data["TIER_2"]["clinical"]["asserted"] + ent_data["TIER_3"]["clinical"]["asserted"]
-        uncertain = ent_data["TIER_1"]["clinical"]["uncertain"] + ent_data["TIER_2"]["clinical"]["uncertain"] + ent_data["TIER_3"]["clinical"]["uncertain"]
-        negated = ent_data["TIER_1"]["clinical"]["negated"] + ent_data["TIER_2"]["clinical"]["negated"] + ent_data["TIER_3"]["clinical"]["negated"]
+        asserted = (
+            ent_data["TIER_1"]["clinical"]["asserted"]
+            + ent_data["TIER_2"]["clinical"]["asserted"]
+            + ent_data["TIER_3"]["clinical"]["asserted"]
+        )
+        uncertain = (
+            ent_data["TIER_1"]["clinical"]["uncertain"]
+            + ent_data["TIER_2"]["clinical"]["uncertain"]
+            + ent_data["TIER_3"]["clinical"]["uncertain"]
+        )
+        negated = (
+            ent_data["TIER_1"]["clinical"]["negated"]
+            + ent_data["TIER_2"]["clinical"]["negated"]
+            + ent_data["TIER_3"]["clinical"]["negated"]
+        )
 
         if asserted:
             return "POS"
@@ -224,16 +215,13 @@ class EmergencyDocumentClassifier(BaseDocumentClassifier):
             return "POSSIBLE"
         return "NEG"
 
-    def classify_document_emergency_keywords(self, doc):
+    def classify_document_emergency_keywords(self, doc) -> ClassificationResult:
         for ent in doc.ents:
             if ent.label_ == "PNEUMONIA":
                 return "POS"
         return "NEG"
 
-
-
-
-    def classify_document_emergency_old(self, doc):
+    def classify_document_emergency_old(self, doc) -> ClassificationResult:
         section_ents = {
             "TIER_1": {"POSSIBLE": [], "POS": [], "NEG": []},
             "TIER_2": {"POSSIBLE": [], "POS": [], "NEG": []},
