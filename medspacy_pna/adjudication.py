@@ -1,14 +1,21 @@
 import os, glob
 import pandas as pd
-from lxml import etree
+from lxml import etree  # type: ignore
 
 from medspacy.visualization import visualize_ent, visualize_dep
+
 # from medspacy_pna.nlp.utils import build_nlp
 
-DOCUMENT_ANNOTATION_CLASSES = {"DOCUMENT_POSITIVE": "POS", "DOCUMENT_POSSIBLE": "POS", "DOCUMENT_NEGATIVE": "NEG",
-                               "DOCUMENT_NOT_MD_NOTE": "NEG", "DOCUMENT_BAD_NOTE": "NEG"}
+DOCUMENT_ANNOTATION_CLASSES = {
+    "DOCUMENT_POSITIVE": "POS",
+    "DOCUMENT_POSSIBLE": "POS",
+    "DOCUMENT_NEGATIVE": "NEG",
+    "DOCUMENT_NOT_MD_NOTE": "NEG",
+    "DOCUMENT_BAD_NOTE": "NEG",
+}
 
-attributes = ['is_negated', 'is_hypothetical', 'is_uncertain', 'is_historical']
+attributes = ["is_negated", "is_hypothetical", "is_uncertain", "is_historical"]
+
 
 def process_text(nlp, text):
     # Skip preprocessing
@@ -22,7 +29,9 @@ def process_text(nlp, text):
 
 
 # def load_document_annotations(directory, nlp):
-def load_ehost_batch(directory, nlp,  sub_directories=None, process_texts=True, annotator=None):
+def load_ehost_batch(
+    directory, nlp, sub_directories=None, process_texts=True, annotator=None
+):
 
     ehost_df = load_ehost_annotations(directory, sub_directories)
 
@@ -31,23 +40,37 @@ def load_ehost_batch(directory, nlp,  sub_directories=None, process_texts=True, 
         ehost_df["annotator"] = annotator
     annotators = set(ehost_df["annotator"])
 
-
     for annotator in annotators:
         sub_df = ehost_df[ehost_df["annotator"] == annotator]
 
-        sub_df[f"{annotator}_document_classification"] = sub_df["document_classification"]
-        sub_df[f"{annotator}_normalized_document_classification"] = sub_df[f"{annotator}_document_classification"].apply(lambda x:DOCUMENT_ANNOTATION_CLASSES.get(x))
-        sub_dfs.append(sub_df[["filename", f"{annotator}_document_classification", f"{annotator}_normalized_document_classification"]])
+        sub_df[f"{annotator}_document_classification"] = sub_df[
+            "document_classification"
+        ]
+        sub_df[f"{annotator}_normalized_document_classification"] = sub_df[
+            f"{annotator}_document_classification"
+        ].apply(lambda x: DOCUMENT_ANNOTATION_CLASSES.get(x))
+        sub_dfs.append(
+            sub_df[
+                [
+                    "filename",
+                    f"{annotator}_document_classification",
+                    f"{annotator}_normalized_document_classification",
+                ]
+            ]
+        )
     if len(sub_dfs) == 0:
         return pd.DataFrame()
     reference_standard = sub_dfs[0].copy()
 
     for sub_df in sub_dfs[1:]:
-        reference_standard = pd.merge(reference_standard, sub_df, how="outer", on="filename")
+        reference_standard = pd.merge(
+            reference_standard, sub_df, how="outer", on="filename"
+        )
 
     nlp_df = load_nlp_df(directory, nlp, sub_directories, process_texts)
-    df = pd.merge(nlp_df, reference_standard, on="filename",how="outer")
+    df = pd.merge(nlp_df, reference_standard, on="filename", how="outer")
     return df
+
 
 def load_ehost_annotations(directory, sub_directories=None):
 
@@ -55,7 +78,9 @@ def load_ehost_annotations(directory, sub_directories=None):
         xml_filepaths = []
         batches = []
         for sub_dir in sub_directories:
-            xml_filepaths += glob.glob(os.path.join(directory, sub_dir, "saved", "*.xml"))
+            xml_filepaths += glob.glob(
+                os.path.join(directory, sub_dir, "saved", "*.xml")
+            )
             batches += [sub_dir for filepath in xml_filepaths]
     else:
         xml_filepaths = glob.glob(os.path.join(directory, "saved", "*.xml"))
@@ -69,36 +94,48 @@ def load_ehost_annotations(directory, sub_directories=None):
         xml = etree.fromstring(xml_text)
         filename = ".".join(os.path.basename(filepath).split(".")[:-2])
         annotations += [
-            parse_annotation(filename, x, batch) for x in xml.findall("annotation") if x is not None]
-        class_mentions += [parse_class_mention(filename, x) for x in xml.findall("classMention")]
-        slot_mentions += [parse_string_slot_mention(filename, x) for x in xml.findall("stringSlotMention")]
+            parse_annotation(filename, x, batch)
+            for x in xml.findall("annotation")
+            if x is not None
+        ]
+        class_mentions += [
+            parse_class_mention(filename, x) for x in xml.findall("classMention")
+        ]
+        slot_mentions += [
+            parse_string_slot_mention(filename, x)
+            for x in xml.findall("stringSlotMention")
+        ]
 
     annotations = pd.DataFrame(annotations)
     class_mentions = pd.DataFrame(class_mentions)
     slot_mentions = pd.DataFrame(slot_mentions)
 
-
-    ehost_df = pd.merge(pd.merge(annotations, class_mentions,
-                                 on=["filename", "mention_id"],
-                                 how="inner"),
-                        slot_mentions,
-                        left_on=["filename", "has_slot_mention"],
-                        right_on=["filename", "string_slot_mention_id"],
-                        how="left")
+    ehost_df = pd.merge(
+        pd.merge(
+            annotations, class_mentions, on=["filename", "mention_id"], how="inner"
+        ),
+        slot_mentions,
+        left_on=["filename", "has_slot_mention"],
+        right_on=["filename", "string_slot_mention_id"],
+        how="left",
+    )
 
     ehost_df = ehost_df[ehost_df["mention_class"].isin(DOCUMENT_ANNOTATION_CLASSES)]
     # print(ehost_df[ehost_df["mention_class"] == "DOCUMENT_NOT_MD_NOTE"])
-#     print(ehost_df)
+    #     print(ehost_df)
     ehost_df = ehost_df.rename({"mention_class": "document_classification"}, axis=1)
     # TODO: if needed, get attributes
 
     return ehost_df
 
+
 def load_nlp_df(directory, nlp, sub_directories=None, process_texts=True):
     if sub_directories is not None:
         text_filepaths = []
         for sub_dir in sub_directories:
-            text_filepaths += glob.glob(os.path.join(directory, sub_dir, "corpus", "*.txt"))
+            text_filepaths += glob.glob(
+                os.path.join(directory, sub_dir, "corpus", "*.txt")
+            )
     else:
         text_filepaths = glob.glob(os.path.join(directory, "corpus", "*.txt"))
     nlp_dicts = []
@@ -110,14 +147,15 @@ def load_nlp_df(directory, nlp, sub_directories=None, process_texts=True):
         else:
             doc = None
         filename = os.path.basename(text_filepath)
-        if process_texts:
+        # Added 3/23/26 to ensure doc is not None
+        if process_texts and doc is not None:
             nlp_doc_class = doc._.document_classification
         else:
             nlp_doc_class = None
         d = {
-            "filename": filename
-            , "doc": doc
-            , "nlp_document_classification": nlp_doc_class
+            "filename": filename,
+            "doc": doc,
+            "nlp_document_classification": nlp_doc_class,
         }
         nlp_dicts.append(d)
 
@@ -125,11 +163,12 @@ def load_nlp_df(directory, nlp, sub_directories=None, process_texts=True):
 
     return nlp_df
 
+
 def parse_annotation(filename, annotation, batch_name=None):
     d = {"filename": filename}
     mention_id = annotation.find("mention").get("id")
     d["mention_id"] = mention_id
-    
+
     span = annotation.find("span")
     d["start"] = span.get("start")
     d["end"] = span.get("end")
@@ -138,9 +177,9 @@ def parse_annotation(filename, annotation, batch_name=None):
             d[key] = annotation.find(key).text
         except:
             d[key] = None
-#     d["annotator"] = annotation.find("annotator").text
-#     d["text"] = annotation.find("spannedText").text
-#     d["creation_date"] = annotation.find("creationDate").text
+    #     d["annotator"] = annotation.find("annotator").text
+    #     d["text"] = annotation.find("spannedText").text
+    #     d["creation_date"] = annotation.find("creationDate").text
     d["batch_name"] = batch_name
     return d
 
@@ -152,11 +191,13 @@ def parse_class_mention(filename, class_mention):
         has_slot_mention = class_mention.find("hasSlotMention").get("id")
     except:
         has_slot_mention = None
-    return {"mention_id": mention_id,
-            "filename": filename,
-            "has_slot_mention": has_slot_mention,
-            "mention_class": mention_class,
-            "filename": filename}
+    return {
+        "mention_id": mention_id,
+        "filename": filename,
+        "has_slot_mention": has_slot_mention,
+        "mention_class": mention_class,
+        "filename": filename,
+    }
 
 
 def parse_string_slot_mention(filename, string_slot_mention):
@@ -168,11 +209,28 @@ def parse_string_slot_mention(filename, string_slot_mention):
     d["value"] = value
     return d
 
-def create_ents_df(df, nlp=None, reprocess_sent=False,
-                   df_cols=("TIUDocumentSID", "final_document_classification", "nlp_document_classification")):
+
+def create_ents_df(
+    df,
+    nlp=None,
+    reprocess_sent=False,
+    df_cols=(
+        "TIUDocumentSID",
+        "final_document_classification",
+        "nlp_document_classification",
+    ),
+):
     ents = []
-    medspacy_attrs = ("is_family", "is_historical", "is_hypothetical", "is_ignored",
-                      "is_negated", "is_template", "is_uncertain", "section_title")
+    medspacy_attrs = (
+        "is_family",
+        "is_historical",
+        "is_hypothetical",
+        "is_ignored",
+        "is_negated",
+        "is_template",
+        "is_uncertain",
+        "section_title",
+    )
 
     for i, row in df.iterrows():
         for ent in row["doc"].ents:
@@ -202,14 +260,16 @@ def create_ents_df(df, nlp=None, reprocess_sent=False,
         if nlp is None:
             raise ValueError()
         ents_df["doc2"] = list(nlp.pipe([sent.text for sent in ents_df["sent"]]))
-        ents_df["sent_classification"] = ents_df["doc2"].apply(lambda x: x._.document_classification)
+        ents_df["sent_classification"] = ents_df["doc2"].apply(
+            lambda x: x._.document_classification
+        )
 
     return ents_df
+
 
 class MedspaCyVisualizerWidget:
 
     def __init__(self, docs, nlp, annotated_labels=None):
-
         """Create an IPython Widget Box displaying medspaCy's visualizers.
         The widget allows selecting visualization style ("Ent", "Dep", or "Both")
         and a slider for selecting the index of docs.
@@ -235,18 +295,17 @@ class MedspaCyVisualizerWidget:
             min=0,
             max=len(docs) - 1,
             step=1,
-            description='Doc:',
+            description="Doc:",
             disabled=False,
             continuous_update=False,
-            orientation='horizontal',
+            orientation="horizontal",
             readout=True,
-            readout_format='d'
+            readout_format="d",
         )
         self.radio = widgets.RadioButtons(options=["Ent", "Dep", "Both"])
-        self.layout = widgets.Layout(display='flex',
-                                     flex_flow='column',
-                                     align_items='stretch',
-                                     width='100%')
+        self.layout = widgets.Layout(
+            display="flex", flex_flow="column", align_items="stretch", width="100%"
+        )
         self.radio.observe(self._change_handler)
         self.slider.observe(self._change_handler)
         self.next_button = widgets.Button(description="Next")
@@ -257,11 +316,13 @@ class MedspaCyVisualizerWidget:
         self.refresh_button.on_click(self._change_handler)
         self.output = widgets.Output()
         self.box = widgets.Box(
-            [widgets.HBox([self.radio, self.previous_button,self.next_button]),
-             self.slider,
-             self.refresh_button,
-             self.output],
-            layout=self.layout
+            [
+                widgets.HBox([self.radio, self.previous_button, self.next_button]),
+                self.slider,
+                self.refresh_button,
+                self.output,
+            ],
+            layout=self.layout,
         )
 
         self.display()
@@ -272,6 +333,7 @@ class MedspaCyVisualizerWidget:
     def display(self):
         """Display the Box widget in the current IPython cell."""
         from IPython.display import display as ipydisplay
+
         ipydisplay(self.box)
 
     def _change_handler(self, change):
@@ -303,30 +365,42 @@ class MedspaCyVisualizerWidget:
     def set_docs(self, docs):
         "Replace the list of docs to be visualized."
         self.docs = docs
-        self._visualize_doc(self.docs[0])
+        # removed 3/23/26, as _visualize_doc does not take an argument, and instead uses self.current_doc
+        # self._visualize_doc(self.docs[0])
+        self._visualize_doc()
+
 
 def visualize_ent_gold_classification(doc, gold_label):
     from IPython.display import display, HTML
+
     html = ""
     html += f"<h1>Annotated label: {gold_label}</h1>"
     html += f"<h1>Predicted label: {doc._.document_classification}</h1>"
     html += visualize_ent(doc, jupyter=False)
     display(HTML(html))
 
-LABELS = ["STABLY_HOUSED", "UNSTABLY_HOUSED", "UNKNOWN", ]
+
+LABELS = [
+    "STABLY_HOUSED",
+    "UNSTABLY_HOUSED",
+    "UNKNOWN",
+]
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
 def create_confusion_matrix(y1, y2, labels, margins=True):
 
-    conf = pd.DataFrame(confusion_matrix(y1, y2, labels=LABELS), columns=LABELS)
+    conf: pd.DataFrame = pd.DataFrame(confusion_matrix(y1, y2, labels=LABELS), columns=LABELS)
     conf.index = LABELS
 
     if margins:
-        cols_sum = conf.sum(axis=0)
+        cols_sum: pd.Series = conf.sum(axis=0)
         cols_sum.name = f"{labels[0]}_total"
-        conf = conf.append(cols_sum)
+        # Updated 3/23/26 to use .iloc to add the totals row, since .append is deprecated in pandas 2.0
+        # conf = conf.append(cols_sum)
+        conf.iloc[len(conf)] = cols_sum
 
         rows_sum = conf.sum(axis=1)
         rows_sum.name = f"{labels[1]}_total"
