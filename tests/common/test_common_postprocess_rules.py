@@ -1,3 +1,5 @@
+from spacy.tokens import Doc
+
 from medspacy_pna.util import build_nlp
 import pytest
 
@@ -6,8 +8,9 @@ nlp = build_nlp("discharge")
 class TestDCommonPostprocessRules:
     @pytest.mark.skip(reason="Need to review 'CAP'")
     def test_cap_medications(self):
-        doc = nlp("Medications: cap")
-        assert doc._.section_categories[0] == "medications"
+        doc: Doc = nlp("Medications: cap")
+        
+        assert doc._.section_categories[0] == "medications" # type: ignore
         assert len(doc.ents) == 0
 
     @pytest.mark.skip(reason="Need to review 'CAP'")
