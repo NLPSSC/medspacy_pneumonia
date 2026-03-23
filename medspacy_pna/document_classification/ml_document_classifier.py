@@ -1,4 +1,4 @@
-import textacy
+from textacy.extract import basics as extract_basics
 from spacy.tokens import Doc
 
 Doc.set_extension("feature_dict", default=dict(), force=True)
@@ -87,20 +87,18 @@ def extract_context_edges_text(context_df):
 def extract_doc_classification(doc_df):
     return {"nlp_document_classification": doc_df.iloc[0]["document_classification"]}
 
-
-def tokenize_ngrams(text, n=3):
+# tokenize_ngrams not used, so added nlp argument to avoid NameError if called accidentally. Can update if needed in the future.
+def tokenize_ngrams(nlp, text, n=3):
     ngrams = []
     for i in range(1, n + 1):
         ngrams += list(
-            textacy.extract.ngrams(
-                nlp.tokenizer(text), i, filter_stops=False, filter_punct=False
-            )
+            extract_basics.ngrams(nlp.tokenizer(text), i, filter_stops=False, filter_punct=False)
         )
     return ngrams
 
 
 def doc2tokens(doc):
-    tokens = textacy.extract.ngrams(doc, 1, filter_stops=True, filter_punct=True)
+    tokens = extract_basics.ngrams(doc, 1, filter_stops=True, filter_punct=True)
     return [token.text.lower() for token in tokens]
 
 
