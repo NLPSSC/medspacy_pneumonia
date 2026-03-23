@@ -14,7 +14,10 @@ from medspacy.preprocess import PreprocessingRule
 
 from medspacy_pna._extensions import set_extensions
 from medspacy_pna.resources.common import common_preprocess_rules
-from medspacy_pna.resources.emergency import emergency_preprocess_rules, emergency_postprocess_rules
+from medspacy_pna.resources.emergency import (
+    emergency_preprocess_rules,
+    emergency_postprocess_rules,
+)
 from medspacy_pna.resources.discharge import discharge_postprocess_rules
 from medspacy_pna.resources.radiology import radiology_postprocess_rules
 from medspacy_pna.resources.clinical import clinical_postprocess_rules
@@ -38,7 +41,7 @@ RULE_CLASSES = {
     "target_matcher": TargetRule,
     "context": ConTextRule,
     "sectionizer": SectionRule,
-    "preprocessor": PreprocessingRule
+    "preprocessor": PreprocessingRule,
 }
 
 SECTION_ATTRS = {
@@ -47,130 +50,139 @@ SECTION_ATTRS = {
         "history_of_present_illness": {"is_historical": True},
         "past_medical_history": {"is_historical": True},
         "patient_instructions": {"is_hypothetical": True},
-        "medical_decision_making": {"is_uncertain": True}
+        "medical_decision_making": {"is_uncertain": True},
     }
 }
 
 DOC_CONSUMER_ATTRS = {
     "doc": ["document_classification"],
     "ent": [
-
         "text",
         "literal",
         "start_char",
         "end_char",
         "label_",
-        "section_category" ,
+        "section_category",
         "is_negated",
         "is_uncertain",
         "is_historical",
         "is_hypothetical",
         "is_family",
         "is_ignored",
-        "snippet"
-
-            ],
+        "snippet",
+    ],
     "section": DocConsumer.get_default_attrs()["section"],
     "context": DocConsumer.get_default_attrs()["context"],
 }
 
+
 def build_all_nlps(domains=("emergency", "radiology", "discharge")):
     """Returns a dict mapping domain names (emergency, radiology, and discharge) to respective NLP models."""
     from collections import OrderedDict
+
     nlps = OrderedDict()
     for domain in domains:
         nlps[domain] = build_nlp(domain)
     return nlps
 
+
 # Filter out unnecessary rules to improve efficiency
 # This set can be modified or filtering   can be disabled
 # in build_nlp if you would like to keep all the categories
 TARGET_RULE_CATEGORIES = {
-     #    'ABNORMALITY',
-     # 'ACTIVE',
-     # 'ACUTE',
-     # 'AERATION',
-     # 'ANATOMY',
-     # 'ARTHRITIS',
-     'ATELECTASIS',
-     # 'ATHEROSCLEROSIS',
-     # 'BLUNTING',
-     # 'CALCIFICATION',
-     'CARDIOPULMONARY_PROCESS',
-     # 'CAVITATION',
-     # 'CHRONIC',
-     # 'COMPRESSIVE',
-     'CONSOLIDATION',
-     'COVID',
-     # 'DENSE',
-     # 'DENSITY',
-     # 'DESCRIPTOR',
-     # 'DIFFUSE',
-     # 'EFFUSION',
-     # 'EMPHYSEMA',
-     'FIBROSIS',
-     # 'FOCAL',
-     'HOSPITAL_ACQUIRED_PNEUMONIA',
-     'IGNORE',
-     # 'ILLDEFINED',
-     'INFECTION',
-     'INFILTRATE',
-     # 'INFLAMMATION',
-     'INTERSTITIAL_LUNG_DISEASE',
-     # 'LINEAR',
-     # 'LOCALIZED',
-     # 'LOCATION',
-     # 'MAXIMAL',
-     # 'METASTATIC',
-     # 'MINIMAL',
-     # 'MODERATE',
-     # 'OBSCURATION',
-     'OPACITY',
-     # 'PATCHY',
-     # 'PLEURAL_EFFUSION',
-     'PNEUMONIA',
-     # 'PULMONARY_EDEMA',
-     'RAD_PNEUMONIA',
-     # 'ROUNDED',
-     # 'SILHOUETTE',
-     # 'SOFT_TISSUE_ATTENUATION',
-     # 'STRANDY',
-     # 'STREAKY',
-     'TEMPLATE',
-     # 'TORTUOUS',
-     # 'TREATMENT'
+    #    'ABNORMALITY',
+    # 'ACTIVE',
+    # 'ACUTE',
+    # 'AERATION',
+    # 'ANATOMY',
+    # 'ARTHRITIS',
+    "ATELECTASIS",
+    # 'ATHEROSCLEROSIS',
+    # 'BLUNTING',
+    # 'CALCIFICATION',
+    "CARDIOPULMONARY_PROCESS",
+    # 'CAVITATION',
+    # 'CHRONIC',
+    # 'COMPRESSIVE',
+    "CONSOLIDATION",
+    "COVID",
+    # 'DENSE',
+    # 'DENSITY',
+    # 'DESCRIPTOR',
+    # 'DIFFUSE',
+    # 'EFFUSION',
+    # 'EMPHYSEMA',
+    "FIBROSIS",
+    # 'FOCAL',
+    "HOSPITAL_ACQUIRED_PNEUMONIA",
+    "IGNORE",
+    # 'ILLDEFINED',
+    "INFECTION",
+    "INFILTRATE",
+    # 'INFLAMMATION',
+    "INTERSTITIAL_LUNG_DISEASE",
+    # 'LINEAR',
+    # 'LOCALIZED',
+    # 'LOCATION',
+    # 'MAXIMAL',
+    # 'METASTATIC',
+    # 'MINIMAL',
+    # 'MODERATE',
+    # 'OBSCURATION',
+    "OPACITY",
+    # 'PATCHY',
+    # 'PLEURAL_EFFUSION',
+    "PNEUMONIA",
+    # 'PULMONARY_EDEMA',
+    "RAD_PNEUMONIA",
+    # 'ROUNDED',
+    # 'SILHOUETTE',
+    # 'SOFT_TISSUE_ATTENUATION',
+    # 'STRANDY',
+    # 'STREAKY',
+    "TEMPLATE",
+    # 'TORTUOUS',
+    # 'TREATMENT'
 }
 
 CONTEXT_RULE_CATEGORIES = {
-    'DECREASED',
-     # 'DESCRIPTOR',
-     'FAMILY',
-     'HISTORICAL',
-     'HYPOTHETICAL',
-     'IMPROVED',
-     # 'INCREASED',
-     # 'LOCALIZED_ANATOMY',
-     # 'LOCATION',
-     'NEGATED_EXISTENCE',
-     'POSITIVE_EXISTENCE',
-     'POSSIBLE_EXISTENCE',
-     'PSEUDO',
-     'RELATION',
-     'TERMINATE',
-     'UNCHANGED',
-    'IGNORE'
-     # 'WORSENED'
-
+    "DECREASED",
+    # 'DESCRIPTOR',
+    "FAMILY",
+    "HISTORICAL",
+    "HYPOTHETICAL",
+    "IMPROVED",
+    # 'INCREASED',
+    # 'LOCALIZED_ANATOMY',
+    # 'LOCATION',
+    "NEGATED_EXISTENCE",
+    "POSITIVE_EXISTENCE",
+    "POSSIBLE_EXISTENCE",
+    "PSEUDO",
+    "RELATION",
+    "TERMINATE",
+    "UNCHANGED",
+    "IGNORE",
+    # 'WORSENED'
 }
+
 
 def _filter_target_rules(rules):
     return [r for r in rules if r.category in TARGET_RULE_CATEGORIES]
 
+
 def _filter_context_rules(rules):
     return [r for r in rules if r.category in CONTEXT_RULE_CATEGORIES]
 
-def build_nlp(domain=None, doc_cls_schema=None, cfg_file=None, model=None, doc_consumer=False,
-              filter_categories=True):
+
+def build_nlp(
+    domain=None,
+    doc_cls_schema=None,
+    cfg_file=None,
+    model=None,
+    doc_consumer=False,
+    filter_categories=True,
+):
     """Loads an NLP model for a specified domain.
     Params:
         domain (str): The name of the clinical domain for the model.
@@ -205,15 +217,22 @@ def build_nlp(domain=None, doc_cls_schema=None, cfg_file=None, model=None, doc_c
     if domain is None:
         domain = cfg.get(domain)
     if domain not in DOMAINS:
-        raise warnings.warn("Warning: invalid domain found in config file: " + domain)
+        warnings.warn(
+            "Warning: invalid domain found in config file: "
+            + (domain if domain else "None")
+        )
     rules = load_rules_from_cfg(cfg)
 
     if model is None:
-        nlp = medspacy.load("en_core_web_sm", enable=["tokenizer", "medspacy_target_matcher"])
-        for pipe in ('attribute_ruler', 'ner', 'lemmatizer'):
+        nlp = medspacy.load(
+            "en_core_web_sm", enable=["tokenizer", "medspacy_target_matcher"]
+        )
+        for pipe in ("attribute_ruler", "ner", "lemmatizer"):
             nlp.remove_pipe(pipe)
     elif model == "medspacy":
-        nlp = medspacy.load(enable=["tokenizer", "sentencizer", "medspacy_target_matcher"])
+        nlp = medspacy.load(
+            enable=["tokenizer", "sentencizer", "medspacy_target_matcher"]
+        )
     else:
         nlp = medspacy.load(model, enable=["medspacy_target_matcher"])
 
@@ -221,26 +240,30 @@ def build_nlp(domain=None, doc_cls_schema=None, cfg_file=None, model=None, doc_c
     preprocessor = Preprocessor(nlp.tokenizer)
     nlp.tokenizer = preprocessor
 
-
-
-
-
     nlp.add_pipe("medspacy_concept_tagger", before="medspacy_target_matcher")
 
     context_config = {"rules": None}
-    nlp.add_pipe("medspacy_context", after="medspacy_target_matcher", config=context_config)
+    nlp.add_pipe(
+        "medspacy_context", after="medspacy_target_matcher", config=context_config
+    )
 
     # TODO: Cannot figure out how this is getting disabled within the call above to add_pipe()
     # Very confusing how this is happening....
     nlp.enable_pipe("medspacy_context")
 
     section_attrs = SECTION_ATTRS.get(domain, False)
-    sectionizer_config = {"rules": None, 'phrase_matcher_attr': "LOWER", 'add_attrs': section_attrs}
-    nlp.add_pipe("medspacy_sectionizer", config = sectionizer_config, after="medspacy_context")
+    sectionizer_config = {
+        "rules": None,
+        "phrase_matcher_attr": "LOWER",
+        "add_attrs": section_attrs,
+    }
+    nlp.add_pipe(
+        "medspacy_sectionizer", config=sectionizer_config, after="medspacy_context"
+    )
 
     debug = False
-    postprocessor_config = {'debug': debug}
-    postprocessor = nlp.add_pipe("medspacy_postprocessor", config = postprocessor_config)
+    postprocessor_config = {"debug": debug}
+    postprocessor = nlp.add_pipe("medspacy_postprocessor", config=postprocessor_config)
 
     classifier_pipe_name = None
     if domain == "radiology":
@@ -255,13 +278,19 @@ def build_nlp(domain=None, doc_cls_schema=None, cfg_file=None, model=None, doc_c
     nlp.add_pipe(classifier_pipe_name, config={"classification_schema": doc_cls_schema})
 
     # Add the rules loaded from the config file
-    for (name, component_rules) in rules.items():
+    for name, component_rules in rules.items():
         try:
             # NOTE: This is a bit strange, but it prevents changing lots of references in code
             # to prefix with "medspacy_" when it is only needed here.
             pipe_name = name
-            if name in ['concept_tagger', 'context', 'target_matcher', 'sectionizer', 'postprocessor']:
-                pipe_name = 'medspacy_' + name
+            if name in [
+                "concept_tagger",
+                "context",
+                "target_matcher",
+                "sectionizer",
+                "postprocessor",
+            ]:
+                pipe_name = "medspacy_" + name
 
             component = nlp.get_pipe(pipe_name)
         except KeyError:
@@ -271,29 +300,28 @@ def build_nlp(domain=None, doc_cls_schema=None, cfg_file=None, model=None, doc_c
                 component_rules = _filter_target_rules(component_rules)
             elif isinstance(component_rules[0], ConTextRule):
                 component_rules = _filter_context_rules(component_rules)
-        component.add(component_rules)
+        component.add(component_rules)  # type: ignore
 
     # Don't know how to load the pre/postprocess rules from a config file
     # Maybe something like this: https://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path
     # In the meantime, just manually add
     preprocessor.add(common_preprocess_rules.preprocess_rules)
 
-
-
     if domain == "discharge":
-        postprocessor.add(discharge_postprocess_rules.postprocess_rules)
-        postprocessor.add(clinical_postprocess_rules.postprocess_rules)
+        postprocessor.add(discharge_postprocess_rules.postprocess_rules)  # type: ignore
+        postprocessor.add(clinical_postprocess_rules.postprocess_rules)  # type: ignore
     if domain == "emergency":
         preprocessor.add(emergency_preprocess_rules.preprocess_rules)
-        postprocessor.add(clinical_postprocess_rules.postprocess_rules)
-        postprocessor.add(emergency_postprocess_rules.postprocess_rules)
+        postprocessor.add(clinical_postprocess_rules.postprocess_rules)  # type: ignore
+        postprocessor.add(emergency_postprocess_rules.postprocess_rules)  # type: ignore
     elif domain == "radiology":
-        postprocessor.add(radiology_postprocess_rules.postprocess_rules)
+        postprocessor.add(radiology_postprocess_rules.postprocess_rules)  # type: ignore
 
     if doc_consumer:
-        consumer_config = {'dtypes': ("ent", "doc"), 'dtype_attrs': DOC_CONSUMER_ATTRS}
-        nlp.add_pipe("medspacy_doc_consumer", config = consumer_config)
+        consumer_config = {"dtypes": ("ent", "doc"), "dtype_attrs": DOC_CONSUMER_ATTRS}
+        nlp.add_pipe("medspacy_doc_consumer", config=consumer_config)
     return nlp
+
 
 def load_rules_from_cfg(cfg, resources_dir=None):
     if resources_dir is None:
@@ -301,11 +329,14 @@ def load_rules_from_cfg(cfg, resources_dir=None):
     rules = _load_cfg_rules(cfg, resources_dir)
     return rules
 
+
 def load_cfg_file(filepath):
     import json
+
     with open(filepath) as f:
         cfg = json.loads(f.read())
     return cfg
+
 
 def _load_cfg_rules(cfg, resources_dir):
     rules = dict()
@@ -317,6 +348,7 @@ def _load_cfg_rules(cfg, resources_dir):
 
             rules[component].extend(rule_cls.from_json(abspath))
     return rules
+
 
 def add_additional_resources(nlp, domain, resources_dir):
     """Add custom rules to a pipeline to augment those loaded by build_nlp.
@@ -333,12 +365,12 @@ def add_additional_resources(nlp, domain, resources_dir):
                     - emergency_context_rules.json
                 ...
     """
-    cfg_file = os.path.join(resources_dir, "configs", domain+".json")
+    cfg_file = os.path.join(resources_dir, "configs", domain + ".json")
     cfg = load_cfg_file(cfg_file)
 
     rules = _load_cfg_rules(cfg, resources_dir)
 
-    for (name, component_rules) in rules.items():
+    for name, component_rules in rules.items():
         if name == "preprocessor":
             component = nlp.tokenizer
         else:
@@ -347,8 +379,14 @@ def add_additional_resources(nlp, domain, resources_dir):
                 # NOTE: This is a bit strange, but it prevents changing lots of references in code
                 # to prefix with "medspacy_" when it is only needed here.
                 pipe_name = name
-                if name in ['concept_tagger', 'context', 'target_matcher', 'sectionizer', 'postprocessor']:
-                    pipe_name = 'medspacy_' + name
+                if name in [
+                    "concept_tagger",
+                    "context",
+                    "target_matcher",
+                    "sectionizer",
+                    "postprocessor",
+                ]:
+                    pipe_name = "medspacy_" + name
 
                 component = nlp.get_pipe(pipe_name)
             except KeyError:
@@ -359,7 +397,7 @@ def add_additional_resources(nlp, domain, resources_dir):
 def get_document_classifier_pipe_name(nlp):
     pipe_name = None
     for pipe_name in nlp.pipe_names:
-        if 'document_classifier' in pipe_name or 'documentclassifier' in pipe_name:
+        if "document_classifier" in pipe_name or "documentclassifier" in pipe_name:
             return pipe_name
 
     return pipe_name
