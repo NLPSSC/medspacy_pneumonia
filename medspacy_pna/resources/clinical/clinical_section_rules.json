@@ -12,12 +12,14 @@
             "parent_required": false,
             "literal": "Addendum:"
         },
-       {
+        {
             "parents": [],
             "category": "addendum",
             "parent_required": false,
             "literal": "<<ADDENDUM>>:",
-        "metadata": {"comment": "artificial section header that shouldn't be confused with imaging"}
+            "metadata": {
+                "comment": "artificial section header that shouldn't be confused with imaging"
+            }
         },
         {
             "parents": [],
@@ -68,11 +70,25 @@
             "literal": "Admitting Diagnosis:",
             "pattern": [
                 {
-                    "LOWER": {"IN": ["admitting", "admission"]}
+                    "LOWER": {
+                        "IN": [
+                            "admitting",
+                            "admission"
+                        ]
+                    }
                 },
-                {"LOWER": {"IN":  ["diagnoses", "dx", "diagnosis"]}},
-                {"LOWER":  ":"}
-
+                {
+                    "LOWER": {
+                        "IN": [
+                            "diagnoses",
+                            "dx",
+                            "diagnosis"
+                        ]
+                    }
+                },
+                {
+                    "LOWER": ":"
+                }
             ]
         },
         {
@@ -83,9 +99,20 @@
             "category": "admission_diagnoses",
             "literal": "PRINCIPAL ADMISSION DIAGNOSIS",
             "pattern": [
-                {"TEXT":  "PRINCIPAL"},
-                {"TEXT":  "ADMISSION"},
-                {"TEXT":  {"IN":  ["DIAGNOSIS", "DIAGNOSES"]}}
+                {
+                    "TEXT": "PRINCIPAL"
+                },
+                {
+                    "TEXT": "ADMISSION"
+                },
+                {
+                    "TEXT": {
+                        "IN": [
+                            "DIAGNOSIS",
+                            "DIAGNOSES"
+                        ]
+                    }
+                }
             ]
         },
         {
@@ -95,8 +122,8 @@
             "literal": "DIAGNOSES:"
         },
         {
-          "literal": "PRIMARY DISCHARGE DIAGNOSIS (PRESENT ON ADMISSION):",
-          "category": "discharge_diagnoses"
+            "literal": "PRIMARY DISCHARGE DIAGNOSIS (PRESENT ON ADMISSION):",
+            "category": "discharge_diagnoses"
         },
         {
             "parents": [],
@@ -110,13 +137,32 @@
             "parent_required": false,
             "literal": "Emergency Room Dx:",
             "pattern": [
-                {"LOWER": "emergency"},
-                {"LOWER":  {"IN":  ["room", "department", "depart"]}},
-                {"LOWER":  {"IN":  ["diagnosis", "diagnoses", "dx"]}},
-                {"LOWER":  ":"}
+                {
+                    "LOWER": "emergency"
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "room",
+                            "department",
+                            "depart"
+                        ]
+                    }
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "diagnosis",
+                            "diagnoses",
+                            "dx"
+                        ]
+                    }
+                },
+                {
+                    "LOWER": ":"
+                }
             ]
         },
-
         {
             "parents": [],
             "category": "diagnoses",
@@ -139,8 +185,17 @@
             "category": "diagnoses",
             "literal": "SECONDARY DIAGNOSES",
             "pattern": [
-                {"TEXT":  "SECONDARY"},
-                {"TEXT":  {"IN":  ["DIAGNOSIS", "DIAGNOSES"]}}
+                {
+                    "TEXT": "SECONDARY"
+                },
+                {
+                    "TEXT": {
+                        "IN": [
+                            "DIAGNOSIS",
+                            "DIAGNOSES"
+                        ]
+                    }
+                }
             ]
         },
         {
@@ -159,12 +214,29 @@
             "literal": "DIAGNOSIS AT THE TIME OF DEATH",
             "category": "discharge_diagnoses",
             "pattern": [
-                {"TEXT":  {"IN":  ["DIAGNOSIS", "DIAGNOSES"]}},
-                {"TEXT":  "AT"},
-                {"TEXT":  "THE"},
-                {"TEXT":  "TIME"},
-                {"TEXT":  "OF"},
-                {"TEXT":  "DEATH"}
+                {
+                    "TEXT": {
+                        "IN": [
+                            "DIAGNOSIS",
+                            "DIAGNOSES"
+                        ]
+                    }
+                },
+                {
+                    "TEXT": "AT"
+                },
+                {
+                    "TEXT": "THE"
+                },
+                {
+                    "TEXT": "TIME"
+                },
+                {
+                    "TEXT": "OF"
+                },
+                {
+                    "TEXT": "DEATH"
+                }
             ]
         },
         {
@@ -175,10 +247,10 @@
             "category": "discharge_diagnoses",
             "literal": "DISCHARGE DX:"
         },
-      {
+        {
             "category": "medical_decision_making",
             "literal": "Differential DX:",
-        "pattern": "[\\r\\n]\\s*diff(erential)? (dx|diagnosis|diagnoses)\\s*[\\-:\\n\\r]"
+            "pattern": "[\\r\\n]\\s*diff(erential)? (dx|diagnosis|diagnoses)\\s*[\\-:\\n\\r]"
         },
         {
             "category": "admission_diagnoses",
@@ -232,31 +304,30 @@
             "parent_required": false,
             "literal": "HISTORY OF PRESENT ILLNESS:"
         },
-      {
-        "category": "history_of_present_illness",
-        "literal": "HISTORY OF PRESENTING ILLNESS:"
-      },
+        {
+            "category": "history_of_present_illness",
+            "literal": "HISTORY OF PRESENTING ILLNESS:"
+        },
         {
             "parents": [],
             "category": "hospital_course",
             "parent_required": false,
             "literal": "Brief Hospital Course:"
         },
-      {
+        {
             "parents": [],
             "category": "hospital_course",
             "parent_required": false,
             "literal": "BRIEF COURSE OF STAY:"
         },
-
-      {
+        {
             "parents": [],
             "category": "hospital_course",
             "parent_required": false,
             "literal": "Brief Hospital Course:",
             "pattern": "Brief Hospital Course\\s*[\\n\\r]"
         },
-       {
+        {
             "parents": [],
             "category": "hospital_course",
             "parent_required": false,
@@ -311,7 +382,6 @@
             "category": "hospital_course",
             "literal": "HOSPITAL COURSE & MANAGEMENT:"
         },
-
         {
             "parents": [],
             "category": "hospital_course",
@@ -323,7 +393,6 @@
             "literal": "[\\n\\r]Hospital Course",
             "pattern": "[\\n\\r]Hospital Course"
         },
-
         {
             "parents": [],
             "category": "imaging",
@@ -336,7 +405,7 @@
             "parent_required": false,
             "literal": "INTERPRETATION:"
         },
-      {
+        {
             "parents": [],
             "category": "labs_and_studies",
             "parent_required": false,
@@ -359,11 +428,21 @@
             "category": "imaging",
             "parent_required": false,
             "literal": "Radiology:",
-            "pattern": [{"LOWER":  "radiology"}, {"OP":  "?"}, {"LOWER":  ":"}]
+            "pattern": [
+                {
+                    "LOWER": "radiology"
+                },
+                {
+                    "OP": "?"
+                },
+                {
+                    "LOWER": ":"
+                }
+            ]
         },
         {
-          "literal": "CXR Radiology Report",
-          "category": "imaging"
+            "literal": "CXR Radiology Report",
+            "category": "imaging"
         },
         {
             "parents": [],
@@ -378,8 +457,8 @@
             "literal": "Admission Labs:"
         },
         {
-          "category": "labs_and_studies",
-          "literal": "Labs ordered/reviewed:"
+            "category": "labs_and_studies",
+            "literal": "Labs ordered/reviewed:"
         },
         {
             "parents": [],
@@ -565,7 +644,7 @@
             "parents": [],
             "category": "observation_and_plan",
             "parent_required": false,
-            "literal":  "\\nA/P",
+            "literal": "\\nA/P",
             "pattern": "[\\n\\r]\\s*A/P"
         },
         {
@@ -574,7 +653,9 @@
             "parent_required": false,
             "literal": "AP:",
             "pattern": "[\\n\\r][\\s]*ap:",
-            "metadata": {"comment": "Match AP: at the beginning of a line without a colon"}
+            "metadata": {
+                "comment": "Match AP: at the beginning of a line without a colon"
+            }
         },
         {
             "parents": [],
@@ -582,7 +663,9 @@
             "parent_required": false,
             "literal": "A/P",
             "pattern": "[\\n\\r][\\s]*a/?p[\\s]*[\\n\\r]",
-            "metadata": {"comment": "Sometimes a/p appears without a colon, but need to be careful to not pick up the line in the middle of the text"}
+            "metadata": {
+                "comment": "Sometimes a/p appears without a colon, but need to be careful to not pick up the line in the middle of the text"
+            }
         },
         {
             "parents": [],
@@ -590,7 +673,9 @@
             "parent_required": false,
             "literal": "A:",
             "pattern": "[\\n\\r][\\s]*a:[\\s]*[\\n\\r]",
-            "metadata": {"comment": "Sometimes A: and P: appear separately as section titles, but needs to be cautious."}
+            "metadata": {
+                "comment": "Sometimes A: and P: appear separately as section titles, but needs to be cautious."
+            }
         },
         {
             "parents": [],
@@ -598,12 +683,21 @@
             "parent_required": false,
             "literal": "RADIOLOGY",
             "pattern": "[\\n\\r][\\s]*RADIOLOGY[\\s]*[\\n\\r]",
-            "metadata": {"comment": "Sometimes 'RADIOLOGY' appears without a colon, but need to be careful to not pick up the line in the middle of the text"}
+            "metadata": {
+                "comment": "Sometimes 'RADIOLOGY' appears without a colon, but need to be careful to not pick up the line in the middle of the text"
+            }
         },
         {
             "category": "imaging",
             "literal": "CXR:",
-            "pattern": [{"TEXT":  "CXR"}, {"TEXT":  ":"}]
+            "pattern": [
+                {
+                    "TEXT": "CXR"
+                },
+                {
+                    "TEXT": ":"
+                }
+            ]
         },
         {
             "parents": [],
@@ -619,9 +713,9 @@
             "literal": "ASSESSMENT:"
         },
         {
-          "category": "observation_and_plan",
-          "literal": "Ass:",
-          "pattern": "[\\n\\r]\\s*Ass:"
+            "category": "observation_and_plan",
+            "literal": "Ass:",
+            "pattern": "[\\n\\r]\\s*Ass:"
         },
         {
             "parents": [],
@@ -685,9 +779,20 @@
             "category": "discharge_diagnoses",
             "literal": "PRINCIPAL ADMISSION DIAGNOSIS",
             "pattern": [
-                {"TEXT":  "PRINCIPAL"},
-                {"TEXT":  "DISCHARGE"},
-                {"TEXT":  {"IN":  ["DIAGNOSIS", "DIAGNOSES"]}}
+                {
+                    "TEXT": "PRINCIPAL"
+                },
+                {
+                    "TEXT": "DISCHARGE"
+                },
+                {
+                    "TEXT": {
+                        "IN": [
+                            "DIAGNOSIS",
+                            "DIAGNOSES"
+                        ]
+                    }
+                }
             ]
         },
         {
@@ -742,8 +847,8 @@
             "literal": "Secondary Diagnoses and Co-morbidities"
         },
         {
-          "category": "problem_list",
-          "literal": "Comorbid conditions:"
+            "category": "problem_list",
+            "literal": "Comorbid conditions:"
         },
         {
             "parents": [],
@@ -751,7 +856,6 @@
             "parent_required": false,
             "literal": "FINAL DIAGNOSIS:"
         },
-
         {
             "parents": [],
             "category": "impression",
@@ -1040,9 +1144,9 @@
             "pattern": "HISTORY OF (THE )PRESENT ILLNESS:?"
         },
         {
-          "category": "history_of_present_illness",
-          "literal": "HISTORY OF PRESENT ILLNESS",
-          "pattern": "HISTORY OF PRESENT ILLNESS[\\n\\r]"
+            "category": "history_of_present_illness",
+            "literal": "HISTORY OF PRESENT ILLNESS",
+            "pattern": "HISTORY OF PRESENT ILLNESS[\\n\\r]"
         },
         {
             "parents": [],
@@ -1107,14 +1211,12 @@
             "literal": "DIAGNOSES",
             "pattern": "[\\n\\r][\\s]*DIAGNOS[IE]S[\\s]*[\\n\\r]"
         },
-
         {
             "category": "diagnoses",
             "parent_required": false,
             "literal": "DIAGNOSTIC IMPRESSIONS:",
             "pattern": "DIAGNOSTIC IMPRESSIONS?:"
         },
-
         {
             "parents": [],
             "category": "medications",
@@ -1204,16 +1306,26 @@
             "category": "imaging",
             "literal": "Report/Impression Text:",
             "pattern": [
-                {"LOWER":  {"IN":  ["report", "impression"]}},
-                {"LOWER":  "text"},
-                {"LOWER":  ":"}
+                {
+                    "LOWER": {
+                        "IN": [
+                            "report",
+                            "impression"
+                        ]
+                    }
+                },
+                {
+                    "LOWER": "text"
+                },
+                {
+                    "LOWER": ":"
+                }
             ]
         },
         {
             "category": "imaging",
             "literal": "Report:"
         },
-
         {
             "parents": [],
             "category": "observation_and_plan",
@@ -1249,7 +1361,14 @@
             "category": "observation_and_plan",
             "parent_required": false,
             "literal": "PLAN:",
-            "pattern": [{"LOWER":  "plan"}, {"LOWER": ":"}]
+            "pattern": [
+                {
+                    "LOWER": "plan"
+                },
+                {
+                    "LOWER": ":"
+                }
+            ]
         },
         {
             "parents": [],
@@ -1299,7 +1418,7 @@
             "category": "medications",
             "parent_required": false,
             "literal": "Active Non-VA Medications Status",
-            "pattern":  "Active (Non-VA|Outpatient) Medications([\\s\\n\\r]+Status)?"
+            "pattern": "Active (Non-VA|Outpatient) Medications([\\s\\n\\r]+Status)?"
         },
         {
             "parents": [],
@@ -1308,8 +1427,7 @@
             "literal": "Medical Decision Making:",
             "pattern": "Medical[ -]?Decision[ -]?Making\\s*[:\\n\\r]"
         },
-      {
-
+        {
             "category": "medical_decision_making",
             "literal": "Medical Decision Making:",
             "pattern": "[\\n\\r]\\s*Medical[ -]?Decision[ -]?Making"
@@ -1326,7 +1444,6 @@
             "parent_required": false,
             "literal": "MDM:"
         },
-
         {
             "category": "problem_list",
             "literal": "Active Problems",
@@ -1343,18 +1460,37 @@
             "pattern": "Active Problems?[\\s\\r]+"
         },
         {
-            "literal":"axis-iii",
+            "literal": "axis-iii",
             "category": "DSM",
             "pattern": [
-                {"LOWER": "axis"},
-                {"LOWER":  "-", "OP":  "?"},
-                {"LOWER":  {"IN":  ["i", "ii", "iii", "iv", "v", "1", "2", "3", "4", "5"]}}
+                {
+                    "LOWER": "axis"
+                },
+                {
+                    "LOWER": "-",
+                    "OP": "?"
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "i",
+                            "ii",
+                            "iii",
+                            "iv",
+                            "v",
+                            "1",
+                            "2",
+                            "3",
+                            "4",
+                            "5"
+                        ]
+                    }
+                }
             ]
         },
         {
             "literal": "REASON FOR ADMISSION (H&P):",
             "category": "history_of_present_illness"
         }
-
     ]
 }

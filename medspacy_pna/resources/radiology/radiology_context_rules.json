@@ -1,45 +1,63 @@
 {
-  "context_rules": [
-    {
-          "literal": "chest view",
-          "category": "HYPOTHETICAL",
-          "direction": "FORWARD",
-      "pattern": [
-        {"LOWER":  "chest"},
-        {"OP":  "?"},
-        {"LIKE_NUM":  true, "OP":  "?"},
-        {"LOWER":  {"IN": ["view", "views"]}}
-      ],
-      "metadata": {"description":  "mention of 'chest view' is usually talking about the reason for exam, not findings"}
-      },
-    {
-      "literal": "limit evaluation",
-      "category": "HYPOTHETICAL",
-      "direction": "FORWARD",
-      "pattern": [
-        {"LOWER":
-          {"IN":
-            [
-              "limit",
-              "limits",
-              "limited"
-            ]
-          }
+    "context_rules": [
+        {
+            "literal": "chest view",
+            "category": "HYPOTHETICAL",
+            "direction": "FORWARD",
+            "pattern": [
+                {
+                    "LOWER": "chest"
+                },
+                {
+                    "OP": "?"
+                },
+                {
+                    "LIKE_NUM": true,
+                    "OP": "?"
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "view",
+                            "views"
+                        ]
+                    }
+                }
+            ],
+            "metadata": {
+                "description": "mention of 'chest view' is usually talking about the reason for exam, not findings"
+            }
         },
-        {"LOWER":  "evaluation"}
-      ]
-    },
-    {
-      "literal": "cannot exclude",
-      "category": "POSSIBLE_EXISTENCE",
-      "direction": "FORWARD"
-    },
-    {
-      "literal": "difficult to exclude",
-      "category": "POSSIBLE_EXISTENCE",
-      "direction": "FORWARD"
-    },
-    {
+        {
+            "literal": "limit evaluation",
+            "category": "HYPOTHETICAL",
+            "direction": "FORWARD",
+            "pattern": [
+                {
+                    "LOWER": {
+                        "IN": [
+                            "limit",
+                            "limits",
+                            "limited"
+                        ]
+                    }
+                },
+                {
+                    "LOWER": "evaluation"
+                }
+            ]
+        },
+        {
+            "literal": "cannot exclude",
+            "category": "POSSIBLE_EXISTENCE",
+            "direction": "FORWARD"
+        },
+        {
+            "literal": "difficult to exclude",
+            "category": "POSSIBLE_EXISTENCE",
+            "direction": "FORWARD"
+        },
+        {
             "literal": "evaluate for",
             "category": "HYPOTHETICAL",
             "direction": "FORWARD"
@@ -65,34 +83,34 @@
             "category": "HYPOTHETICAL",
             "direction": "BIDIRECTIONAL"
         },
-      {
+        {
             "literal": "may be related to",
             "category": "RELATION",
             "direction": "FORWARD"
         },
-       {
+        {
             "literal": "related to",
             "max_scope": 1,
             "category": "RELATION",
             "direction": "FORWARD"
         },
-    {
+        {
             "literal": "r/t",
             "max_scope": 1,
             "category": "RELATION",
             "direction": "FORWARD"
         },
-    {
+        {
             "literal": "ro",
             "category": "HYPOTHETICAL",
             "direction": "FORWARD"
-      },
-      {
-          "literal": "r/o",
-          "category": "HYPOTHETICAL",
-          "direction": "FORWARD"
-      },
-    {
+        },
+        {
+            "literal": "r/o",
+            "category": "HYPOTHETICAL",
+            "direction": "FORWARD"
+        },
+        {
             "literal": "evaluate for",
             "category": "HYPOTHETICAL",
             "direction": "FORWARD"
@@ -190,20 +208,20 @@
             ],
             "direction": "FORWARD"
         },
-    {
-      "literal": "possibly with",
-      "category": "POSSIBLE_EXISTENCE",
-      "direction": "FORWARD"
-    },
-    {
-      "literal": "may be considered",
-      "category": "POSSIBLE_EXISTENCE",
-      "direction": "BACKWARD"
-    },
-    {
-      "literal": "may consider",
-      "category": "POSSIBLE_EXISTENCE",
-      "direction": "BACKWARD"
-    }
-  ]
+        {
+            "literal": "possibly with",
+            "category": "POSSIBLE_EXISTENCE",
+            "direction": "FORWARD"
+        },
+        {
+            "literal": "may be considered",
+            "category": "POSSIBLE_EXISTENCE",
+            "direction": "BACKWARD"
+        },
+        {
+            "literal": "may consider",
+            "category": "POSSIBLE_EXISTENCE",
+            "direction": "BACKWARD"
+        }
+    ]
 }

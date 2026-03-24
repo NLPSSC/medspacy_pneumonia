@@ -10,12 +10,12 @@ DEFAULT_SCHEMA = "linked"
 TARGET_CLASSES = {"PNEUMONIA", "CONSOLIDATION", "INFILTRATE", "OPACITY"}
 
 ENTITY_ATTRIBUTES = {
-        "is_negated": False,
-        "is_hypothetical": False,
-        "is_historical": False,
-        "is_family": False,
-        # "is_uncertain": True, # Allow uncertain mentions to count as positive in radiology
-        "is_ignored": False
+    "is_negated": False,
+    "is_hypothetical": False,
+    "is_historical": False,
+    "is_family": False,
+    # "is_uncertain": True, # Allow uncertain mentions to count as positive in radiology
+    "is_ignored": False,
 }
 
 TIER_1_CLASSES = {
@@ -62,14 +62,18 @@ LINK_PHRASES = [
     "suggests",
 ]
 
+
 @Language.factory("pneumonia_radiologydocumentclassifier")
 class RadiologyDocumentClassifier(BaseDocumentClassifier):
     domain = "radiology"
-    schemas = (
-        "full",
-        "attributes", "linked", "keywords")
+    schemas = ("full", "attributes", "linked", "keywords")
 
-    def __init__(self, nlp, name="pneumonia_radiologydocumentclassifier", classification_schema=None):
+    def __init__(
+        self,
+        nlp,
+        name="pneumonia_radiologydocumentclassifier",
+        classification_schema=None,
+    ):
         self.nlp = nlp
         self.name = name
         if classification_schema is None:
@@ -90,11 +94,14 @@ class RadiologyDocumentClassifier(BaseDocumentClassifier):
     def link_evidence(self, doc):
         for ent in doc.ents:
             ent._.linked_ents = tuple()
-        for (ent, modifier) in doc._.context_graph.edges:
-            if ent.label_ in ALTERNATE_DIAGNOSES and modifier.span.text.lower() in LINK_PHRASES:
+        for ent, modifier in doc._.context_graph.edges:
+            if (
+                ent.label_ in ALTERNATE_DIAGNOSES
+                and modifier.span.text.lower() in LINK_PHRASES
+            ):
                 # print(ent, modifier)
                 sent = ent.sent
-                span = doc[sent.start:ent.start]
+                span = doc[sent.start : ent.start]
                 other_ents = span.ents
                 for other in other_ents:
                     if other.label_ in TIER_2_CLASSES:
@@ -114,7 +121,7 @@ class RadiologyDocumentClassifier(BaseDocumentClassifier):
             is_excluded = False
 
             # Check if any of the attributes don't match required values (ie., is_negated == True)
-            for (attr, req_value) in ENTITY_ATTRIBUTES.items():
+            for attr, req_value in ENTITY_ATTRIBUTES.items():
                 # This entity won't count as positive evidence, move onto the next one
                 if getattr(ent._, attr) != req_value:
                     # print(ent, attr)
@@ -124,7 +131,11 @@ class RadiologyDocumentClassifier(BaseDocumentClassifier):
                     break
             # TODO: this is an additional piece of logic around alternate dx, should maybe go somewhere else
             if not is_excluded:
-                if link_ents and ent.label_ in TIER_2_CLASSES and len(ent._.linked_ents):
+                if (
+                    link_ents
+                    and ent.label_ in TIER_2_CLASSES
+                    and len(ent._.linked_ents)
+                ):
 
                     is_excluded = True
             if not is_excluded:
@@ -140,14 +151,14 @@ class RadiologyDocumentClassifier(BaseDocumentClassifier):
         return {
             "asserted": asserted_ent_labels,
             "uncertain": uncertain_ent_labels,
-            "negated": negated_ent_labels
+            "negated": negated_ent_labels,
         }
 
     def classify_document_keywords(self, doc):
         """Classify based *only* on the presence of target entity labels."""
         ent_data = self.gather_ent_data(doc, link_ents=False)
         ent_labels = set()
-        for (_, sub_ent_labels) in ent_data.items():
+        for _, sub_ent_labels in ent_data.items():
             ent_labels.update(sub_ent_labels)
         if ent_labels.intersection(TARGET_CLASSES):
             return "POS"
@@ -170,14 +181,15 @@ class RadiologyDocumentClassifier(BaseDocumentClassifier):
         if 0 == 1:
             pass
         # NOTE 9/27: If there is an uncertain Tier 2, bump up to Positive
-        elif uncertain_ent_labels.intersection(TIER_1_CLASSES) and asserted_ent_labels.intersection(TIER_2_CLASSES):
+        elif uncertain_ent_labels.intersection(
+            TIER_1_CLASSES
+        ) and asserted_ent_labels.intersection(TIER_2_CLASSES):
             document_classification = "POS"
         # 9/27: prioritize possible over positive
         elif uncertain_ent_labels.intersection(TIER_1_CLASSES):
             document_classification = "POSSIBLE"
         elif asserted_ent_labels.intersection(TIER_1_CLASSES):
             document_classification = "POS"
-
 
         elif negated_ent_labels.intersection(TIER_1_CLASSES):
             document_classification = "NEG"
@@ -187,8 +199,10 @@ class RadiologyDocumentClassifier(BaseDocumentClassifier):
             document_classification = "POSSIBLE"
         else:
             document_classification = "NEG"
-        
-        assert document_classification is not None, "Document classification should not be None"
+
+        assert (
+            document_classification is not None
+        ), "Document classification should not be None"
         return document_classification
 
     def classify_document_radiology_full(self, doc):
@@ -209,13 +223,17 @@ class RadiologyDocumentClassifier(BaseDocumentClassifier):
         if asserted_ent_labels.intersection(TIER_1_CLASSES):
             document_classification = "POS"
         # NOTE 9/27: If there is an uncertain Tier 2, bump up to Positive
-        elif uncertain_ent_labels.intersection(TIER_1_CLASSES) and asserted_ent_labels.intersection(TIER_2_CLASSES):
+        elif uncertain_ent_labels.intersection(
+            TIER_1_CLASSES
+        ) and asserted_ent_labels.intersection(TIER_2_CLASSES):
             document_classification = "POS"
         elif uncertain_ent_labels.intersection(TIER_1_CLASSES):
             document_classification = "POSSIBLE"
         elif negated_ent_labels.intersection(TIER_1_CLASSES):
             document_classification = "NEG"
-        elif asserted_ent_labels.union(uncertain_ent_labels).intersection(ALTERNATE_DIAGNOSES):
+        elif asserted_ent_labels.union(uncertain_ent_labels).intersection(
+            ALTERNATE_DIAGNOSES
+        ):
             document_classification = "NEG"
         elif asserted_ent_labels.intersection(TIER_2_CLASSES):
             document_classification = "POS"
@@ -226,16 +244,16 @@ class RadiologyDocumentClassifier(BaseDocumentClassifier):
         return document_classification
 
     def classify_document_radiology_linked(self, doc):
-        """
-        """
+        """ """
         return self.classify_document_attributes(doc, link_ents=True)
-
 
     def _classify_document(self, doc, classification_schema=None, **kwargs):
         if classification_schema is None:
             classification_schema = self.classification_schema
         if classification_schema == "full":
-            return self.classify_document_radiology_full(doc,)
+            return self.classify_document_radiology_full(
+                doc,
+            )
         elif classification_schema == "keywords":
             return self.classify_document_keywords(doc)
         elif classification_schema == "attributes":
