@@ -1,3 +1,5 @@
+from typing import Union
+
 from medspacy_pna.util import build_nlp
 import pandas as pd
 from datetime import datetime
@@ -72,7 +74,7 @@ def close_log(conn, execute_id, rslt=0, rslt_msg=None):
     cursor.close()
 
 
-def get_source_data_documents(conn, domain, num_docs=500) -> pd.DataFrame | None:
+def get_source_data_documents(conn, domain, num_docs=500) -> Union[pd.DataFrame, None]:
     if domain == "radiology":
         df = get_source_data_radiology(conn, num_docs)
     elif domain == "discharge":
@@ -82,18 +84,18 @@ def get_source_data_documents(conn, domain, num_docs=500) -> pd.DataFrame | None
     return df
 
 
-def get_source_data_discharge(conn, domain, num_docs=500) -> pd.DataFrame | None:
-    df: pd.DataFrame | None = None
+def get_source_data_discharge(conn, domain, num_docs=500) -> Union[pd.DataFrame, None]:
+    df: Union[pd.DataFrame, None] = None
     return df
 
 
-def get_source_data_emergency(conn, domain, num_docs=500) -> pd.DataFrame | None:
-    df: pd.DataFrame | None = None
+def get_source_data_emergency(conn, domain, num_docs=500) -> Union[pd.DataFrame, None]:
+    df: Union[pd.DataFrame, None] = None
     return df
 
 
-def get_source_data_radiology(conn, num_docs=500) -> pd.DataFrame | None:
-    df: pd.DataFrame | None = None
+def get_source_data_radiology(conn, num_docs=500) -> Union[pd.DataFrame, None]:
+    df: Union[pd.DataFrame, None] = None
     return df
 
 
@@ -218,7 +220,7 @@ def main():
     conn = create_connection()
     batch_id = init_log(conn, args.domain)
 
-    df: pd.DataFrame | None = get_source_data_documents(
+    df: Union[pd.DataFrame, None] = get_source_data_documents(
         conn, args.domain, num_docs=args.num_docs
     )
     assert df is not None
