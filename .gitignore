@@ -5,3 +5,8 @@ chpc.txt
 edw.txt
 process_documents_uu.py
 *checkpoint.ipynb
+build/
+medspacy_pneumonia.egg-info
+.venv/
+pytest.collection.log
+site_packages.list.txt

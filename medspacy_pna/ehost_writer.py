@@ -1,6 +1,6 @@
 import os, shutil, sys
 from lxml import etree  # type: ignore
-from lxml.etree import Element
+from lxml.etree import Element  # type: ignore
 
 from datetime import date
 
